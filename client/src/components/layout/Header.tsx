@@ -154,7 +154,7 @@ export function Header() {
         </DropdownMenu>
 
         <Button onClick={() => openNewTask()} title="Nouvelle tâche (N)">
-          <PlusIcon />
+          <PlusIcon className="transition-transform duration-300 group-hover/button:rotate-90" />
           <span className="hidden sm:inline">Nouvelle tâche</span>
         </Button>
 

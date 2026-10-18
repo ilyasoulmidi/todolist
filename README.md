@@ -2,7 +2,7 @@
 
 Application de gestion de tâches complète : Kanban, liste, calendrier, statistiques et minuteur Pomodoro.
 
-**🔗 Démo en ligne : [todolist-umber-two.vercel.app](https://todolist-umber-two.vercel.app)** (crée un compte gratuit pour l'essayer)
+**Démo en ligne : [todolist-umber-two.vercel.app](https://todolist-umber-two.vercel.app)** (crée un compte gratuit pour l'essayer)
 
 ![Tableau Kanban](docs/screenshots/kanban-clair.png)
 

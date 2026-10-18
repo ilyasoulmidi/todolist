@@ -33,7 +33,7 @@ export function PomodoroWidget() {
   useEffect(() => {
     if (!active) return
     const previous = document.title
-    document.title = `${formatClock(remaining)} · ${active.type === "WORK" ? "🍅" : "☕"} TodoList`
+    document.title = `${formatClock(remaining)} · ${active.type === "WORK" ? "Concentration" : "Pause"} · TodoList`
     return () => {
       document.title = previous
     }
@@ -48,16 +48,20 @@ export function PomodoroWidget() {
     <div
       role="timer"
       aria-label={`${pomodoroLabels[active.type]} : ${formatClock(remaining)} restantes`}
-      className="fixed right-4 bottom-4 z-40 flex w-[min(20rem,calc(100vw-2rem))] flex-col gap-2 rounded-xl border bg-popover p-3 shadow-lg"
+      className="fixed right-4 bottom-4 z-40 flex w-[min(20rem,calc(100vw-2rem))] animate-in flex-col gap-2 rounded-xl border bg-popover p-3 shadow-lg duration-300 fade-in slide-in-from-bottom-4"
     >
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-full text-lg",
+            "flex size-10 shrink-0 items-center justify-center rounded-full",
             isWork ? "bg-red-100 dark:bg-red-950" : "bg-emerald-100 dark:bg-emerald-950",
           )}
         >
-          {isWork ? "🍅" : <CoffeeIcon className="size-5 text-emerald-700 dark:text-emerald-300" />}
+          {isWork ? (
+            <TimerIcon className="size-5 text-red-600 dark:text-red-400" />
+          ) : (
+            <CoffeeIcon className="size-5 text-emerald-700 dark:text-emerald-300" />
+          )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="text-2xl font-semibold tabular-nums leading-none">{formatClock(remaining)}</span>

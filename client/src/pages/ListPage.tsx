@@ -34,6 +34,7 @@ import { describeRule } from "@/lib/recurrence"
 import { PRIORITIES, priorityLabels, priorityStyles, statusDotStyles, statusLabels } from "@/lib/labels"
 import { useBulkTasks, useCreateTask, useTasks, useUpdateTask } from "@/lib/queries"
 import type { Task, TaskStatus } from "@/lib/types"
+import { stagger } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 import { useUi, type ListGroup, type ListSort, type ListStatusFilter } from "@/stores/ui"
 
@@ -160,8 +161,13 @@ export function ListPage() {
             />
             {tasks!.length} tâche{tasks!.length > 1 ? "s" : ""}
           </div>
-          {groups.map((group) => (
-            <section key={group.key} aria-label={group.label || "Tâches"} className="flex flex-col">
+          {groups.map((group, g) => (
+            <section
+              key={group.key}
+              aria-label={group.label || "Tâches"}
+              style={stagger(g, 80)}
+              className="flex animate-in flex-col duration-500 fill-mode-backwards fade-in slide-in-from-bottom-2"
+            >
               {group.label && (
                 <h2
                   className={cn(
@@ -175,9 +181,10 @@ export function ListPage() {
                 </h2>
               )}
               <ul className="divide-y overflow-hidden rounded-xl border bg-card">
-                {group.tasks.map((task) => (
+                {group.tasks.map((task, i) => (
                   <TaskRow
                     key={task.id}
+                    index={i}
                     task={task}
                     selected={selected.has(task.id)}
                     onSelect={() => toggleSelect(task.id)}
@@ -250,7 +257,17 @@ function ListQuickAdd({ defaults }: { defaults: Parameters<ReturnType<typeof use
   )
 }
 
-function TaskRow({ task, selected, onSelect }: { task: Task; selected: boolean; onSelect: () => void }) {
+function TaskRow({
+  task,
+  index,
+  selected,
+  onSelect,
+}: {
+  task: Task
+  index: number
+  selected: boolean
+  onSelect: () => void
+}) {
   const openTask = useUi((s) => s.openTask)
   const updateTask = useUpdateTask()
   const done = task.status === "DONE"
@@ -259,8 +276,9 @@ function TaskRow({ task, selected, onSelect }: { task: Task; selected: boolean; 
 
   return (
     <li
+      style={stagger(index, 30, 360)}
       className={cn(
-        "group flex cursor-pointer items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/50",
+        "group flex animate-in cursor-pointer items-center gap-3 px-3 py-2.5 text-sm transition-colors duration-300 fill-mode-backwards fade-in slide-in-from-left-2 hover:bg-muted/50",
         selected && "bg-primary/5",
       )}
       onClick={() => openTask(task.id)}
@@ -283,7 +301,7 @@ function TaskRow({ task, selected, onSelect }: { task: Task; selected: boolean; 
         aria-label={done ? "Marquer comme à faire" : "Marquer comme faite"}
         className={cn(
           "flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition",
-          done ? "border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40 hover:border-emerald-500",
+          done ? "animate-pop border-emerald-500 bg-emerald-500 text-white" : "border-muted-foreground/40 hover:border-emerald-500",
         )}
       >
         {done && <CheckIcon className="size-3" strokeWidth={3} />}
@@ -408,7 +426,7 @@ function BulkBar({ ids, onClear }: { ids: string[]; onClear: () => void }) {
 
 function EmptyState({ filtered }: { filtered: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground">
+    <div className="flex animate-in flex-col items-center gap-2 rounded-xl border border-dashed p-10 text-center text-sm text-muted-foreground duration-500 fade-in zoom-in-95">
       {filtered ? <SearchXIcon className="size-6" /> : <CheckIcon className="size-6" />}
       {filtered ? "Aucune tâche ne correspond à ta recherche ou à tes filtres." : "Rien à faire ici. Profite !"}
     </div>

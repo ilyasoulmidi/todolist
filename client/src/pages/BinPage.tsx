@@ -16,6 +16,7 @@ import {
   useUpdateTask,
 } from "@/lib/queries"
 import type { Task } from "@/lib/types"
+import { stagger } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 import { useUi } from "@/stores/ui"
 
@@ -77,8 +78,8 @@ export function BinPage({ kind }: { kind: Kind }) {
         </div>
       ) : (
         <ul className="divide-y overflow-hidden rounded-xl border bg-card">
-          {tasks.map((task) => (
-            <BinRow key={task.id} task={task} kind={kind} />
+          {tasks.map((task, i) => (
+            <BinRow key={task.id} task={task} kind={kind} index={i} />
           ))}
         </ul>
       )}
@@ -95,7 +96,7 @@ export function BinPage({ kind }: { kind: Kind }) {
   )
 }
 
-function BinRow({ task, kind }: { task: Task; kind: Kind }) {
+function BinRow({ task, kind, index }: { task: Task; kind: Kind; index: number }) {
   const openTask = useUi((s) => s.openTask)
   const restore = useRestoreTask()
   const permanentDelete = usePermanentDelete()
@@ -107,7 +108,10 @@ function BinRow({ task, kind }: { task: Task; kind: Kind }) {
   const daysLeft = RETENTION_DAYS - differenceInCalendarDays(new Date(), new Date(since))
 
   return (
-    <li className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
+    <li
+      style={stagger(index, 35)}
+      className="flex animate-in flex-wrap items-center gap-3 px-4 py-3 text-sm duration-300 fill-mode-backwards fade-in slide-in-from-left-2"
+    >
       <button type="button" onClick={() => openTask(task.id)} className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
         <span className={cn("max-w-full truncate font-medium hover:underline", task.status === "DONE" && "line-through")}>
           {task.title}

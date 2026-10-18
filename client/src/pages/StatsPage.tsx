@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { AlertTriangleIcon, CheckCircle2Icon, FlameIcon, ListTodoIcon, TimerIcon } from "lucide-react"
-import { ActivityHeatmap, BarList, DailyColumns, StatTile } from "@/components/charts"
+import { ActivityHeatmap, BarList, CountUp, DailyColumns, StatTile } from "@/components/charts"
 import { Skeleton } from "@/components/ui/skeleton"
 import { api } from "@/lib/api"
+import { stagger } from "@/lib/motion"
 import { computeStats, formatMinutes, type StatsResponse } from "@/lib/stats"
 
 export function StatsPage() {
@@ -37,19 +38,22 @@ export function StatsPage() {
         <StatTile
           icon={<CheckCircle2Icon className="size-4" />}
           label="Terminées (7 jours)"
-          value={String(stats.doneThisWeek)}
+          style={stagger(0, 70)}
+          value={<CountUp value={stats.doneThisWeek} />}
           detail={delta === 0 ? "Comme la semaine précédente" : `${delta > 0 ? "+" : "−"}${Math.abs(delta)} par rapport aux 7 jours précédents`}
         />
         <StatTile
           icon={<FlameIcon className="size-4" />}
           label="Série en cours"
-          value={`${stats.streak.current} j`}
+          style={stagger(1, 70)}
+          value={<CountUp value={stats.streak.current} format={(n) => `${n} j`} />}
           detail={`Record : ${stats.streak.best} jour${stats.streak.best > 1 ? "s" : ""} d'affilée`}
         />
         <StatTile
           icon={<ListTodoIcon className="size-4" />}
           label="Tâches ouvertes"
-          value={String(stats.openCount)}
+          style={stagger(2, 70)}
+          value={<CountUp value={stats.openCount} />}
           detail={
             stats.overdue > 0 ? (
               // Statut « critique » : toujours icône + libellé, jamais la couleur seule
@@ -64,12 +68,13 @@ export function StatsPage() {
         <StatTile
           icon={<TimerIcon className="size-4" />}
           label="Concentration (7 jours)"
-          value={formatMinutes(stats.focusMinutesWeek)}
+          style={stagger(3, 70)}
+          value={<CountUp value={stats.focusMinutesWeek} format={formatMinutes} />}
           detail={`${stats.focusSessionsWeek} session${stats.focusSessionsWeek > 1 ? "s" : ""} Pomodoro terminée${stats.focusSessionsWeek > 1 ? "s" : ""}`}
         />
       </section>
 
-      <Card title="Tâches terminées par jour" subtitle={`30 derniers jours · ${daily30} au total`}>
+      <Card index={1} title="Tâches terminées par jour" subtitle={`30 derniers jours · ${daily30} au total`}>
         <DailyColumns data={stats.daily} unit="tâche terminée" />
         <details className="mt-3 text-sm">
           <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">Voir les données en tableau</summary>
@@ -94,15 +99,15 @@ export function StatsPage() {
         </details>
       </Card>
 
-      <Card title="Activité" subtitle="Tâches terminées sur les 6 derniers mois">
+      <Card index={2} title="Activité" subtitle="Tâches terminées sur les 6 derniers mois">
         <ActivityHeatmap days={stats.heatDays} unit="tâche terminée" />
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Tâches ouvertes par priorité">
+        <Card index={3} title="Tâches ouvertes par priorité">
           <BarList items={stats.byPriority} unit="tâche" empty="Aucune tâche ouverte." />
         </Card>
-        <Card title="Tâches ouvertes par liste">
+        <Card index={4} title="Tâches ouvertes par liste">
           <BarList items={stats.byProject} unit="tâche" empty="Aucune tâche ouverte." />
         </Card>
       </div>
@@ -115,9 +120,23 @@ export function StatsPage() {
   )
 }
 
-function Card({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Card({
+  index,
+  title,
+  subtitle,
+  children,
+}: {
+  index: number
+  title: string
+  subtitle?: string
+  children: React.ReactNode
+}) {
   return (
-    <section aria-label={title} className="flex flex-col gap-4 rounded-xl border bg-card p-4 md:p-5">
+    <section
+      aria-label={title}
+      style={stagger(index + 3, 70)}
+      className="flex animate-in flex-col gap-4 rounded-xl border bg-card p-4 duration-500 fill-mode-backwards fade-in slide-in-from-bottom-3 md:p-5"
+    >
       <header>
         <h2 className="text-sm font-semibold">{title}</h2>
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}

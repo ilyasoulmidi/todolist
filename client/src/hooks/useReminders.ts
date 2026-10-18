@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { createElement, useEffect, useRef, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { BellRingIcon } from "lucide-react"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { keys } from "@/lib/queries"
@@ -59,8 +60,9 @@ export function useReminders() {
         }
       }
 
-      toast(`🔔 ${task.title}`, {
+      toast(task.title, {
         description: "Rappel",
+        icon: createElement(BellRingIcon, { className: "size-4 text-indigo-500" }),
         duration: 15_000,
         action: { label: "Ouvrir", onClick: () => openTask(task.id) },
       })

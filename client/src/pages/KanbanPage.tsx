@@ -23,6 +23,7 @@ import { useScope } from "@/hooks/useScope"
 import { STATUSES, statusDotStyles, statusLabels } from "@/lib/labels"
 import { useArchiveDone, useTasks, useUpdateTask } from "@/lib/queries"
 import type { Task, TaskStatus } from "@/lib/types"
+import { stagger } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 
 type Columns = Record<TaskStatus, Task[]>
@@ -134,9 +135,10 @@ export function KanbanPage() {
         </div>
       )}
       <div className="flex h-full snap-x snap-mandatory gap-4 overflow-x-auto p-4 md:snap-none md:p-6">
-        {STATUSES.map((status) => (
+        {STATUSES.map((status, index) => (
           <Column
             key={status}
+            index={index}
             status={status}
             tasks={columns[status]}
             defaults={{ ...defaults, status }}
@@ -152,11 +154,13 @@ export function KanbanPage() {
 }
 
 function Column({
+  index,
   status,
   tasks,
   defaults,
   archiveProjectId,
 }: {
+  index: number
   status: TaskStatus
   tasks: Task[]
   defaults: Parameters<typeof QuickAdd>[0]["defaults"]
@@ -168,7 +172,8 @@ function Column({
   return (
     <section
       aria-label={statusLabels[status]}
-      className="flex w-[85vw] max-w-sm shrink-0 snap-center flex-col rounded-xl bg-muted/50 sm:w-80"
+      style={stagger(index, 90)}
+      className="flex w-[85vw] max-w-sm shrink-0 animate-in snap-center flex-col rounded-xl bg-muted/50 duration-500 fill-mode-backwards fade-in slide-in-from-bottom-4 sm:w-80"
     >
       <header className="flex items-center gap-2 px-3 pt-3 pb-2">
         <span className={cn("size-2 rounded-full", statusDotStyles[status])} />
@@ -196,8 +201,8 @@ function Column({
             isOver && "rounded-lg bg-primary/5",
           )}
         >
-          {tasks.map((task) => (
-            <SortableTaskCard key={task.id} task={task} />
+          {tasks.map((task, i) => (
+            <SortableTaskCard key={task.id} task={task} index={i} />
           ))}
           {tasks.length === 0 && (
             <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed p-6 text-center text-xs text-muted-foreground">

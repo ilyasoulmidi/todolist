@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from "react-router"
+import { Navigate, Outlet, useLocation } from "react-router"
 import { Loader2Icon } from "lucide-react"
 import { PomodoroWidget } from "@/components/PomodoroWidget"
 import { TaskDialog } from "@/components/tasks/TaskDialog"
@@ -31,6 +31,7 @@ export function AppLayout() {
 // Séparé pour ne lancer les rappels qu'une fois l'utilisateur connecté
 function AuthenticatedLayout({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMobileOpen: (open: boolean) => void }) {
   useReminders()
+  const { pathname } = useLocation()
 
   return (
     <div className="flex h-svh overflow-hidden">
@@ -48,7 +49,11 @@ function AuthenticatedLayout({ mobileOpen, setMobileOpen }: { mobileOpen: boolea
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
         <main className="min-h-0 flex-1 overflow-auto">
-          <Outlet />
+          {/* Chaque page arrive en fondu ; sans « fill-mode » pour ne laisser aucune transformation après coup
+              (elle décalerait les éléments en position fixe, comme la carte en cours de glisser-déposer) */}
+          <div key={pathname} className="h-full animate-in duration-300 fade-in slide-in-from-bottom-2">
+            <Outlet />
+          </div>
         </main>
       </div>
 

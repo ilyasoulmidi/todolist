@@ -254,7 +254,9 @@ function NavItem({
         onClick={onClick}
         className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
       >
-        <span className="flex size-4 items-center justify-center">{icon}</span>
+        <span className="flex size-4 items-center justify-center transition-transform duration-200 group-hover/item:scale-110">
+          {icon}
+        </span>
         <span className="truncate">{children}</span>
         {!!count && (
           <span className={cn("ml-auto text-xs text-muted-foreground", menu && "group-hover/item:hidden")}>{count}</span>

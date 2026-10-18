@@ -7,10 +7,11 @@ import { priorityLabels, priorityStyles } from "@/lib/labels"
 import { describeRule } from "@/lib/recurrence"
 import { useUpdateTask } from "@/lib/queries"
 import type { Task } from "@/lib/types"
+import { stagger } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 import { useUi } from "@/stores/ui"
 
-export function TaskCard({ task, overlay = false }: { task: Task; overlay?: boolean }) {
+export function TaskCard({ task, overlay = false, index = 0 }: { task: Task; overlay?: boolean; index?: number }) {
   const openTask = useUi((s) => s.openTask)
   const updateTask = useUpdateTask()
   const done = task.status === "DONE"
@@ -21,16 +22,19 @@ export function TaskCard({ task, overlay = false }: { task: Task; overlay?: bool
     <div
       role="button"
       tabIndex={0}
+      style={overlay ? undefined : stagger(index, 40, 300)}
       onClick={() => openTask(task.id)}
       onKeyDown={(e) => e.key === "Enter" && openTask(task.id)}
       className={cn(
-        "group flex cursor-pointer flex-col gap-2 rounded-lg border bg-card p-3 text-sm shadow-xs transition hover:border-foreground/20 hover:shadow-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-        overlay && "rotate-2 cursor-grabbing shadow-lg ring-2 ring-primary/30",
+        "group flex cursor-pointer flex-col gap-2 rounded-lg border bg-card p-3 text-sm shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        !overlay && "animate-in duration-300 fill-mode-backwards fade-in zoom-in-95",
+        overlay && "scale-105 rotate-2 cursor-grabbing shadow-xl ring-2 ring-primary/30",
       )}
     >
       <div className="flex items-start gap-2">
         <span onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()} className="pt-0.5">
           <Checkbox
+            className="data-checked:animate-pop"
             checked={done}
             onCheckedChange={(checked) => updateTask.mutate({ id: task.id, status: checked ? "DONE" : "TODO" })}
             aria-label={done ? "Marquer comme à faire" : "Marquer comme faite"}
@@ -93,7 +97,7 @@ export function TaskCard({ task, overlay = false }: { task: Task; overlay?: bool
   )
 }
 
-export function SortableTaskCard({ task }: { task: Task }) {
+export function SortableTaskCard({ task, index = 0 }: { task: Task; index?: number }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: "task" },
@@ -110,7 +114,7 @@ export function SortableTaskCard({ task }: { task: Task }) {
       role={undefined}
       tabIndex={-1}
     >
-      <TaskCard task={task} />
+      <TaskCard task={task} index={index} />
     </div>
   )
 }

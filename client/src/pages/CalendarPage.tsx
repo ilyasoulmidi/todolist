@@ -184,7 +184,12 @@ export function CalendarPage() {
               ))}
             </div>
             <div
-              className={cn("grid flex-1 grid-cols-7", mode === "week" ? "grid-rows-1" : "auto-rows-fr")}
+              // Changer de mois ou de semaine rejoue un fondu
+              key={`${mode}-${days[0].toISOString()}`}
+              className={cn(
+                "grid flex-1 animate-in grid-cols-7 duration-300 fade-in",
+                mode === "week" ? "grid-rows-1" : "auto-rows-fr",
+              )}
             >
               {days.map((day) => (
                 <DayCell
@@ -331,7 +336,7 @@ function TaskChip({ task, large = false }: { task: Task; large?: boolean }) {
         e.stopPropagation()
         openTask(task.id)
       }}
-      className={cn("touch-manipulation", isDragging && "opacity-30")}
+      className={cn("animate-in touch-manipulation duration-300 fade-in zoom-in-90", isDragging && "opacity-30")}
     >
       <ChipBody task={task} large={large} />
     </div>

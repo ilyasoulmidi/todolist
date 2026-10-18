@@ -2,10 +2,18 @@ import { useEffect, useState, type FormEvent } from "react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { fr as dayPickerFr } from "react-day-picker/locale"
-import { ArchiveIcon, ArchiveRestoreIcon, CalendarIcon, CopyIcon, Loader2Icon, PlusIcon, RotateCcwIcon, Trash2Icon, XIcon } from "lucide-react"
-import { RecurrencePicker, ReminderPicker } from "./SchedulePickers"
-import { usePomodoroActions } from "@/hooks/usePomodoroActions"
-import { usePomodoro } from "@/stores/pomodoro"
+import {
+  ArchiveIcon,
+  ArchiveRestoreIcon,
+  CalendarIcon,
+  CopyIcon,
+  Loader2Icon,
+  PlusIcon,
+  RotateCcwIcon,
+  TimerIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -15,6 +23,7 @@ import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { usePomodoroActions } from "@/hooks/usePomodoroActions"
 import { useScope } from "@/hooks/useScope"
 import { formatLong, fromDueIso, isOverdue, toDueIso } from "@/lib/dates"
 import { PRIORITIES, priorityLabels, STATUSES, statusLabels } from "@/lib/labels"
@@ -32,7 +41,9 @@ import {
 } from "@/lib/queries"
 import type { Priority, Task, TaskInput, TaskStatus } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { usePomodoro } from "@/stores/pomodoro"
 import { useUi } from "@/stores/ui"
+import { RecurrencePicker, ReminderPicker } from "./SchedulePickers"
 
 export function TaskDialog() {
   const dialog = useUi((s) => s.taskDialog)
@@ -326,8 +337,8 @@ function FocusSection({ task }: { task: Task }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
-      <span className="text-lg" aria-hidden>
-        🍅
+      <span className="flex size-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-950" aria-hidden>
+        <TimerIcon className="size-4 text-red-600 dark:text-red-400" />
       </span>
       <span className="flex-1 text-muted-foreground">
         {minutes > 0

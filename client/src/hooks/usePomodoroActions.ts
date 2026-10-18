@@ -93,7 +93,7 @@ export function usePomodoroActions() {
       active.type === "WORK" ? (completed ? "Session terminée, bravo !" : "Session passée") : "Fin de la pause"
     const body = `Suivant : ${pomodoroLabels[next].toLowerCase()} (${DURATIONS[next]} min)`
     if (completed && "Notification" in window && Notification.permission === "granted") {
-      new Notification(`🍅 ${title}`, { body, tag: "pomodoro", icon: "/favicon.svg" })
+      new Notification(title, { body, tag: "pomodoro", icon: "/favicon.svg" })
     }
     toast.success(title, {
       description: body,

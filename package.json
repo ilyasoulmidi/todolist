@@ -1,6 +1,9 @@
 {
   "name": "todolist",
   "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
   "workspaces": [
     "client",
     "server"
@@ -12,7 +15,8 @@
     "db:down": "docker compose down",
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build -w client && npm run build -w server",
+    "start": "npm run start -w server"
   },
   "devDependencies": {
     "concurrently": "^9.2.5"

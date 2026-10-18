@@ -57,3 +57,7 @@ npm run dev
 
 L'application s'ouvre sur http://localhost:5173 (compte de démo : `demo@todolist.test` / `demo1234`).
 Les fois suivantes, `npm run dev` suffit.
+
+## Mise en ligne
+
+Le projet se déploie gratuitement sur [Render](https://render.com) (fichier `render.yaml`) avec une base PostgreSQL [Neon](https://neon.com) : il suffit de renseigner la variable `DATABASE_URL`.

@@ -27,7 +27,8 @@ async function main() {
   ]);
 
   const today = new Date();
-  const inDays = (n: number) => new Date(today.getFullYear(), today.getMonth(), today.getDate() + n);
+  // Échéances « jour entier » : date calendaire stockée à minuit UTC
+  const inDays = (n: number) => new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + n));
 
   await prisma.task.create({
     data: {

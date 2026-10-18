@@ -3,3 +3,6 @@ dist/
 .env
 *.log
 server/src/generated/
+
+# Configuration locale de l'éditeur / des outils
+.claude/

@@ -2,6 +2,25 @@
 
 Todo-list interactive full-stack : React + TypeScript (Vite) côté client, Express + Prisma + PostgreSQL côté serveur.
 
+## Fonctionnalités
+
+- Comptes utilisateurs (inscription, connexion, session en cookie sécurisé)
+- Tableau **Kanban** (À faire / En cours / Fait) avec glisser-déposer entre les colonnes et dans une colonne
+- Tâches complètes : priorité, échéance, liste, étiquettes, description, sous-tâches avec progression
+- Filtres rapides : Aujourd'hui, Cette semaine, En retard ; listes et étiquettes colorées
+- Recherche instantanée et filtres par priorité / étiquette
+- Ajout rapide en bas de colonne, duplication, suppression avec « Annuler »
+- Thème clair / sombre / système, interface responsive (mobile)
+- Raccourcis clavier : `N` nouvelle tâche, `/` rechercher
+
+## Stack
+
+| Côté | Technologies |
+|---|---|
+| Front | React 19, TypeScript, Vite, Tailwind CSS 4, shadcn/ui (Base UI), TanStack Query, Zustand, dnd-kit, date-fns, React Router |
+| Back | Node, Express 5, Prisma 7, PostgreSQL 17, Zod, JWT, bcrypt |
+| Tests | Vitest, Supertest |
+
 ## Structure
 
 ```

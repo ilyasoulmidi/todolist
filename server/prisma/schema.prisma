@@ -1,0 +1,158 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum PomodoroType {
+  WORK
+  SHORT_BREAK
+  LONG_BREAK
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  theme        String   @default("system") // "light" | "dark" | "system"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects  Project[]
+  tags      Tag[]
+  tasks     Task[]
+  pomodoros PomodoroSession[]
+}
+
+// Une « liste » (Perso, Travail…) qui regroupe des tâches
+model Project {
+  id         String    @id @default(cuid())
+  name       String
+  color      String    @default("#6366f1")
+  icon       String?
+  position   Float     @default(0)
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks  Task[]
+
+  @@index([userId])
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#64748b")
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks  TaskTag[]
+
+  @@unique([userId, name])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  // Ordre dans une colonne Kanban / une liste (float pour insérer entre deux tâches)
+  position    Float      @default(0)
+
+  dueDate DateTime?
+  allDay  Boolean   @default(true)
+
+  // V2 : rappel (notification navigateur)
+  reminderAt DateTime?
+  reminded   Boolean   @default(false)
+
+  // V2 : récurrence au format RRULE (RFC 5545), ex. "FREQ=WEEKLY;BYDAY=MO"
+  recurrenceRule String?
+  // Occurrence d'origine dont cette tâche a été générée
+  recurrenceParentId String?
+  recurrenceParent   Task?   @relation("Recurrence", fields: [recurrenceParentId], references: [id], onDelete: SetNull)
+  occurrences        Task[]  @relation("Recurrence")
+
+  completedAt DateTime?
+  archivedAt  DateTime? // V2 : archive
+  deletedAt   DateTime? // V2 : corbeille (suppression douce)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  subtasks  Subtask[]
+  tags      TaskTag[]
+  pomodoros PomodoroSession[]
+
+  @@index([userId, status])
+  @@index([userId, dueDate])
+  @@index([userId, deletedAt])
+  @@index([projectId])
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  title     String
+  done      Boolean  @default(false)
+  position  Float    @default(0)
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model TaskTag {
+  taskId String
+  tagId  String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@index([tagId])
+}
+
+// V2 : sessions Pomodoro, aussi utilisées pour les statistiques
+model PomodoroSession {
+  id          String       @id @default(cuid())
+  type        PomodoroType @default(WORK)
+  durationMin Int          @default(25)
+  startedAt   DateTime     @default(now())
+  endedAt     DateTime?
+  completed   Boolean      @default(false)
+
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([userId, startedAt])
+}

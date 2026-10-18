@@ -2,6 +2,31 @@
 
 Todo-list interactive full-stack : React + TypeScript (Vite) côté client, Express + Prisma + PostgreSQL côté serveur.
 
+![Tableau Kanban](docs/screenshots/kanban-clair.png)
+
+## Aperçu
+
+| Clair | Sombre |
+|---|---|
+| **Kanban**<br>![Kanban, thème clair](docs/screenshots/kanban-clair.png) | **Kanban**<br>![Kanban, thème sombre](docs/screenshots/kanban-sombre.png) |
+| **Liste**<br>![Liste, thème clair](docs/screenshots/liste-clair.png) | **Liste**<br>![Liste, thème sombre](docs/screenshots/liste-sombre.png) |
+| **Calendrier**<br>![Calendrier, thème clair](docs/screenshots/calendrier-clair.png) | **Calendrier**<br>![Calendrier, thème sombre](docs/screenshots/calendrier-sombre.png) |
+| **Statistiques**<br>![Statistiques, thème clair](docs/screenshots/statistiques-clair.png) | **Statistiques**<br>![Statistiques, thème sombre](docs/screenshots/statistiques-sombre.png) |
+| **Détail d'une tâche**<br>![Fenêtre de tâche, thème clair](docs/screenshots/tache-clair.png) | **Détail d'une tâche**<br>![Fenêtre de tâche, thème sombre](docs/screenshots/tache-sombre.png) |
+
+### Mobile
+
+<p>
+  <img src="docs/screenshots/mobile-kanban-clair.png" alt="Kanban sur mobile, thème clair" width="200">
+  <img src="docs/screenshots/mobile-liste-clair.png" alt="Liste sur mobile, thème clair" width="200">
+  <img src="docs/screenshots/mobile-calendrier-sombre.png" alt="Calendrier sur mobile, thème sombre" width="200">
+  <img src="docs/screenshots/mobile-kanban-sombre.png" alt="Kanban sur mobile, thème sombre" width="200">
+</p>
+
+### Connexion
+
+![Page de connexion](docs/screenshots/connexion.png)
+
 ## Fonctionnalités
 
 - Comptes utilisateurs (inscription, connexion, session en cookie sécurisé)

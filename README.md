@@ -9,6 +9,9 @@ Todo-list interactive full-stack : React + TypeScript (Vite) côté client, Expr
 - Vue **Liste** : tri (échéance, priorité, titre, création, manuel), regroupement (échéance, statut, priorité, liste), filtre de statut, sélection multiple et actions groupées (terminer, statut, priorité, suppression annulable)
 - Vue **Calendrier** mois / semaine : glisser une tâche sur un jour pour la replanifier, panneau des tâches sans échéance, création rapide sur un jour, affichage adapté au mobile
 - Tâches complètes : priorité, échéance, liste, étiquettes, description, sous-tâches avec progression
+- **Tâches récurrentes** (tous les jours, jours ouvrés, chaque semaine, tous les mois, tous les ans, ou règle personnalisée) : terminer une occurrence crée automatiquement la suivante
+- **Rappels** : notification du navigateur (et rappel dans l'application) à l'heure choisie, avec raccourcis « Dans 1 heure », « Demain 9:00 », « La veille de l'échéance »…
+- **Archives** (archivage en un clic des tâches terminées) et **Corbeille** (restauration, suppression définitive, purge automatique après 30 jours)
 - Filtres rapides : Aujourd'hui, Cette semaine, En retard ; listes et étiquettes colorées
 - Recherche instantanée et filtres par priorité / étiquette
 - Ajout rapide en bas de colonne, duplication, suppression avec « Annuler »
@@ -95,9 +98,14 @@ Toutes les routes ci-dessous exigent d'être connecté. Un utilisateur n'accède
 | POST | `/api/tasks/:id/restore` | Restaurer depuis la corbeille |
 | POST | `/api/tasks/:id/duplicate` | Dupliquer |
 | DELETE | `/api/tasks/trash` | Vider la corbeille |
+| POST | `/api/tasks/archive-done` | Archiver les tâches terminées (`{ projectId? }`) |
+| GET | `/api/tasks/reminders/due` | Rappels arrivés à échéance, pas encore notifiés |
+| POST | `/api/tasks/:id/reminder/ack` | Marquer le rappel comme notifié |
 | POST | `/api/tasks/:id/subtasks` | Ajouter une sous-tâche `{ title }` |
 | PATCH | `/api/tasks/:id/subtasks/:subtaskId` | `{ title?, done?, position? }` |
 | DELETE | `/api/tasks/:id/subtasks/:subtaskId` | Supprimer une sous-tâche |
+
+Récurrence : `recurrenceRule` accepte un sous-ensemble de RRULE (`FREQ=DAILY|WEEKLY|MONTHLY|YEARLY`, `INTERVAL`, `BYDAY` en hebdomadaire, `BYMONTHDAY` en mensuel). Passer une tâche récurrente à `DONE` renvoie `nextTask`, l'occurrence suivante créée.
 
 Paramètres de `GET /api/tasks` :
 

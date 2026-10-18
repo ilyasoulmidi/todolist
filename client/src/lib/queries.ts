@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { api, ApiError } from "./api"
+import { formatLong } from "./dates"
 import type { Project, Subtask, Tag, Task, TaskFilters, TaskInput, User } from "./types"
 
 export const keys = {
@@ -182,7 +183,8 @@ export function useUpdateTask() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, ...data }: TaskInput & { id: string }) =>
-      api.patch<{ task: Task }>(`/tasks/${id}`, data),
+      api.patch<{ task: Task; nextTask: Task | null }>(`/tasks/${id}`, data),
+    onSuccess: ({ nextTask }) => nextTask && announceNextOccurrence(nextTask),
     onMutate: async ({ id, ...data }) => {
       await qc.cancelQueries({ queryKey: keys.tasks })
       const snapshot = qc.getQueriesData({ queryKey: keys.tasks })
@@ -211,6 +213,61 @@ export function useUpdateTask() {
       showError(error)
     },
     onSettled: () => invalidateAfterTaskChange(qc),
+  })
+}
+
+// Tâche récurrente terminée : l'API a créé la suivante
+function announceNextOccurrence(task: Task) {
+  toast.success("Prochaine occurrence créée", {
+    description: task.dueDate ? `Échéance : ${formatLong(task.dueDate)}` : undefined,
+  })
+}
+
+export function useRestoreTask() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.post<{ task: Task }>(`/tasks/${id}/restore`),
+    onSuccess: () => {
+      invalidateAfterTaskChange(qc)
+      toast.success("Tâche restaurée")
+    },
+    onError: showError,
+  })
+}
+
+export function usePermanentDelete() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/tasks/${id}`, { permanent: true }),
+    onSuccess: () => invalidateAfterTaskChange(qc),
+    onError: showError,
+  })
+}
+
+export function useEmptyTrash() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.delete<{ deleted: number }>("/tasks/trash"),
+    onSuccess: ({ deleted }) => {
+      invalidateAfterTaskChange(qc)
+      toast.success(`${deleted} tâche${deleted > 1 ? "s" : ""} supprimée${deleted > 1 ? "s" : ""} définitivement`)
+    },
+    onError: showError,
+  })
+}
+
+export function useArchiveDone() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (projectId?: string | null) =>
+      api.post<{ archived: number }>("/tasks/archive-done", projectId !== undefined ? { projectId } : {}),
+    onSuccess: ({ archived }) => {
+      invalidateAfterTaskChange(qc)
+      toast.success(
+        archived ? `${archived} tâche${archived > 1 ? "s" : ""} archivée${archived > 1 ? "s" : ""}` : "Aucune tâche terminée à archiver",
+      )
+    },
+    onError: showError,
   })
 }
 
@@ -268,8 +325,13 @@ export function useBulkTasks() {
 
   const update = useMutation({
     mutationFn: ({ ids, data }: { ids: string[]; data: TaskInput }) =>
-      Promise.all(ids.map((id) => api.patch(`/tasks/${id}`, data))),
-    onSuccess: (_r, { ids }) => toast.success(`${ids.length} tâche${ids.length > 1 ? "s" : ""} modifiée${ids.length > 1 ? "s" : ""}`),
+      Promise.all(ids.map((id) => api.patch<{ nextTask: Task | null }>(`/tasks/${id}`, data))),
+    onSuccess: (results, { ids }) => {
+      const next = results.filter((r) => r.nextTask).length
+      toast.success(`${ids.length} tâche${ids.length > 1 ? "s" : ""} modifiée${ids.length > 1 ? "s" : ""}`, {
+        description: next ? `${next} occurrence${next > 1 ? "s" : ""} suivante${next > 1 ? "s" : ""} créée${next > 1 ? "s" : ""}` : undefined,
+      })
+    },
     onError: showError,
     onSettled: () => invalidateAfterTaskChange(qc),
   })

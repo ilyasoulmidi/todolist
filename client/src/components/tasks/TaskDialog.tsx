@@ -2,7 +2,8 @@ import { useEffect, useState, type FormEvent } from "react"
 import { format } from "date-fns"
 import { fr } from "date-fns/locale"
 import { fr as dayPickerFr } from "react-day-picker/locale"
-import { CalendarIcon, CopyIcon, Loader2Icon, PlusIcon, Trash2Icon, XIcon } from "lucide-react"
+import { ArchiveIcon, ArchiveRestoreIcon, CalendarIcon, CopyIcon, Loader2Icon, PlusIcon, RotateCcwIcon, Trash2Icon, XIcon } from "lucide-react"
+import { RecurrencePicker, ReminderPicker } from "./SchedulePickers"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -20,6 +21,7 @@ import {
   useDeleteTask,
   useDuplicateTask,
   useProjects,
+  useRestoreTask,
   useSubtaskMutations,
   useTags,
   useTask,
@@ -143,6 +145,7 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
   const updateTask = useUpdateTask()
   const deleteTask = useDeleteTask()
   const duplicateTask = useDuplicateTask()
+  const restoreTask = useRestoreTask()
   const subtaskMutations = useSubtaskMutations(task.id)
   const [title, setTitle] = useState(task.title)
 
@@ -191,6 +194,25 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
       </DialogHeader>
 
       <div className="flex flex-col gap-5 p-4">
+        {(task.deletedAt || task.archivedAt) && (
+          <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+            {task.deletedAt ? <Trash2Icon className="size-4" /> : <ArchiveIcon className="size-4" />}
+            <span className="flex-1">
+              {task.deletedAt
+                ? `Dans la corbeille depuis le ${format(new Date(task.deletedAt), "d MMM", { locale: fr })}`
+                : `Archivée le ${format(new Date(task.archivedAt!), "d MMM", { locale: fr })}`}
+            </span>
+            {task.deletedAt ? (
+              <Button size="sm" variant="outline" onClick={() => restoreTask.mutate(task.id)}>
+                <RotateCcwIcon /> Restaurer
+              </Button>
+            ) : (
+              <Button size="sm" variant="outline" onClick={() => save({ archived: false })}>
+                <ArchiveRestoreIcon /> Désarchiver
+              </Button>
+            )}
+          </div>
+        )}
         <TaskFields
           values={{
             status: task.status,
@@ -198,6 +220,8 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
             dueDate: task.dueDate,
             projectId: task.projectId,
             tagIds: task.tags.map((t) => t.id),
+            recurrenceRule: task.recurrenceRule,
+            reminderAt: task.reminderAt,
           }}
           onChange={save}
           overdue={isOverdue(task.dueDate, task.status)}
@@ -258,6 +282,18 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
           <Button variant="outline" size="sm" onClick={() => duplicateTask.mutate(task.id)}>
             <CopyIcon /> Dupliquer
           </Button>
+          {!task.archivedAt && !task.deletedAt && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                save({ archived: true })
+                onDone()
+              }}
+            >
+              <ArchiveIcon /> Archiver
+            </Button>
+          )}
           <Button
             variant="destructive"
             size="sm"
@@ -327,6 +363,22 @@ function TaskFields({
 
       <FieldRow label="Échéance">
         <DueDatePicker value={values.dueDate ?? null} onChange={(dueDate) => onChange({ dueDate })} overdue={overdue} />
+      </FieldRow>
+
+      <FieldRow label="Répétition">
+        <RecurrencePicker
+          value={values.recurrenceRule ?? null}
+          dueDate={values.dueDate ?? null}
+          onChange={(recurrenceRule) => onChange({ recurrenceRule })}
+        />
+      </FieldRow>
+
+      <FieldRow label="Rappel">
+        <ReminderPicker
+          value={values.reminderAt ?? null}
+          dueDate={values.dueDate ?? null}
+          onChange={(reminderAt) => onChange({ reminderAt })}
+        />
       </FieldRow>
 
       <FieldRow label="Liste">

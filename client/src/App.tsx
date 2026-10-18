@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useApplyTheme } from "@/hooks/useApplyTheme"
 import { AuthPage } from "@/pages/AuthPage"
+import { BinPage } from "@/pages/BinPage"
 import { CalendarPage } from "@/pages/CalendarPage"
 import { KanbanPage } from "@/pages/KanbanPage"
 import { ListPage } from "@/pages/ListPage"
@@ -26,6 +27,8 @@ const router = createBrowserRouter([
       { path: "kanban", element: <KanbanPage /> },
       { path: "liste", element: <ListPage /> },
       { path: "calendrier", element: <CalendarPage /> },
+      { path: "archives", element: <BinPage key="archived" kind="archived" /> },
+      { path: "corbeille", element: <BinPage key="trash" kind="trash" /> },
       { path: "*", element: <Navigate to="/kanban" replace /> },
     ],
   },

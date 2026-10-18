@@ -14,13 +14,14 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core"
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { SearchXIcon } from "lucide-react"
+import { ArchiveIcon, SearchXIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { QuickAdd } from "@/components/tasks/QuickAdd"
 import { SortableTaskCard, TaskCard } from "@/components/tasks/TaskCard"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useScope } from "@/hooks/useScope"
 import { STATUSES, statusDotStyles, statusLabels } from "@/lib/labels"
-import { useTasks, useUpdateTask } from "@/lib/queries"
+import { useArchiveDone, useTasks, useUpdateTask } from "@/lib/queries"
 import type { Task, TaskStatus } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -47,7 +48,7 @@ function positionBetween(before?: Task, after?: Task) {
 }
 
 export function KanbanPage() {
-  const { filters, defaults } = useScope()
+  const { filters, defaults, projectId } = useScope()
   const { data: tasks, isLoading } = useTasks({ ...filters, sort: "position" })
   const updateTask = useUpdateTask()
 
@@ -134,7 +135,13 @@ export function KanbanPage() {
       )}
       <div className="flex h-full snap-x snap-mandatory gap-4 overflow-x-auto p-4 md:snap-none md:p-6">
         {STATUSES.map((status) => (
-          <Column key={status} status={status} tasks={columns[status]} defaults={{ ...defaults, status }} />
+          <Column
+            key={status}
+            status={status}
+            tasks={columns[status]}
+            defaults={{ ...defaults, status }}
+            archiveProjectId={projectId === "none" ? null : (projectId ?? undefined)}
+          />
         ))}
       </div>
       <DragOverlay dropAnimation={{ duration: 180, easing: "ease-out" }}>
@@ -144,8 +151,19 @@ export function KanbanPage() {
   )
 }
 
-function Column({ status, tasks, defaults }: { status: TaskStatus; tasks: Task[]; defaults: Parameters<typeof QuickAdd>[0]["defaults"] }) {
+function Column({
+  status,
+  tasks,
+  defaults,
+  archiveProjectId,
+}: {
+  status: TaskStatus
+  tasks: Task[]
+  defaults: Parameters<typeof QuickAdd>[0]["defaults"]
+  archiveProjectId?: string | null
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
+  const archiveDone = useArchiveDone()
 
   return (
     <section
@@ -156,6 +174,18 @@ function Column({ status, tasks, defaults }: { status: TaskStatus; tasks: Task[]
         <span className={cn("size-2 rounded-full", statusDotStyles[status])} />
         <h2 className="text-sm font-semibold">{statusLabels[status]}</h2>
         <span className="rounded-full bg-background px-2 text-xs text-muted-foreground">{tasks.length}</span>
+        {status === "DONE" && tasks.length > 0 && (
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="ml-auto"
+            onClick={() => archiveDone.mutate(archiveProjectId)}
+            aria-label="Archiver les tâches terminées"
+            title="Archiver les tâches terminées"
+          >
+            <ArchiveIcon />
+          </Button>
+        )}
       </header>
 
       <SortableContext id={status} items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>

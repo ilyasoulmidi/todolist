@@ -43,7 +43,9 @@ export interface Task {
   dueDate: string | null
   allDay: boolean
   reminderAt: string | null
+  reminded: boolean
   recurrenceRule: string | null
+  recurrenceParentId: string | null
   completedAt: string | null
   archivedAt: string | null
   deletedAt: string | null
@@ -63,6 +65,8 @@ export interface TaskInput {
   position?: number
   dueDate?: string | null
   allDay?: boolean
+  reminderAt?: string | null
+  recurrenceRule?: string | null
   projectId?: string | null
   tagIds?: string[]
   subtasks?: string[]
@@ -70,6 +74,7 @@ export interface TaskInput {
 }
 
 export interface TaskFilters {
+  view?: "active" | "archived" | "trash"
   projectId?: string
   tagId?: string[]
   priority?: Priority[]

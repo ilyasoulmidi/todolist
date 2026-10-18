@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react"
 import {
   AlignLeftIcon,
+  BellIcon,
   ArrowDownNarrowWideIcon,
   ArrowUpNarrowWideIcon,
   CalendarIcon,
@@ -29,6 +30,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useScope } from "@/hooks/useScope"
 import { formatDue, isOverdue } from "@/lib/dates"
 import { groupTasks } from "@/lib/grouping"
+import { describeRule } from "@/lib/recurrence"
 import { PRIORITIES, priorityLabels, priorityStyles, statusDotStyles, statusLabels } from "@/lib/labels"
 import { useBulkTasks, useCreateTask, useTasks, useUpdateTask } from "@/lib/queries"
 import type { Task, TaskStatus } from "@/lib/types"
@@ -306,7 +308,12 @@ function TaskRow({ task, selected, onSelect }: { task: Task; selected: boolean; 
             </span>
           )}
           {task.description && <AlignLeftIcon className="size-3.5" aria-label="A une description" />}
-          {task.recurrenceRule && <RepeatIcon className="size-3.5" aria-label="Récurrente" />}
+          {task.recurrenceRule && (
+            <span title={describeRule(task.recurrenceRule)} className="flex">
+              <RepeatIcon className="size-3.5" aria-label={describeRule(task.recurrenceRule)} />
+            </span>
+          )}
+          {task.reminderAt && !task.reminded && <BellIcon className="size-3.5" aria-label="Rappel programmé" />}
           {task.tags.map((tag) => (
             <span
               key={tag.id}

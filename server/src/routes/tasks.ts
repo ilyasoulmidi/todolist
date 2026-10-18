@@ -4,6 +4,7 @@ import { prisma } from "../db.js";
 import { Prisma, Priority, TaskStatus } from "../generated/prisma/client.js";
 import { HttpError } from "../lib/httpError.js";
 import { assertOwnedTags, findOwnedProject, findOwnedTask } from "../lib/ownership.js";
+import { isValidRule, nextOccurrence } from "../lib/recurrence.js";
 import { booleanQuery, csvList, idParam, nullableDate } from "../lib/validation.js";
 import { getUserId, requireAuth } from "../middleware/auth.js";
 
@@ -18,8 +19,13 @@ const taskFields = {
   dueDate: nullableDate,
   allDay: z.boolean(),
   reminderAt: nullableDate,
-  // Règle RRULE (RFC 5545), interprétée par la fonctionnalité de récurrence
-  recurrenceRule: z.string().max(200).nullable(),
+  // Règle RRULE (RFC 5545) : voir lib/recurrence.ts pour le sous-ensemble pris en charge
+  recurrenceRule: z
+    .string()
+    .trim()
+    .max(200)
+    .refine(isValidRule, "Règle de récurrence invalide")
+    .nullable(),
   projectId: z.string().nullable(),
   tagIds: z.array(z.string()).max(20),
 };
@@ -89,6 +95,59 @@ async function nextPosition(userId: string, taskStatus: TaskStatus) {
   return (_max.position ?? -1) + 1;
 }
 
+// Les tâches de la corbeille sont supprimées définitivement au bout de ce délai
+export const TRASH_RETENTION_DAYS = 30;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function startOfTodayUtc() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+/*
+ * Quand une tâche récurrente est terminée, on crée l'occurrence suivante (une seule fois :
+ * si on la rouvre puis la termine à nouveau, rien n'est dupliqué).
+ * L'échéance suivante est calculée à partir de l'échéance actuelle (ou d'aujourd'hui sans échéance)
+ * et ne peut pas tomber dans le passé.
+ */
+async function createNextOccurrence(task: TaskWithRelations) {
+  if (!task.recurrenceRule) return null;
+  const existing = await prisma.task.findFirst({ where: { recurrenceParentId: task.id } });
+  if (existing) return null;
+
+  const today = startOfTodayUtc();
+  let next = nextOccurrence(task.recurrenceRule, task.dueDate ?? today);
+  for (let i = 0; next && next < today && i < 1000; i++) next = nextOccurrence(task.recurrenceRule, next);
+  if (!next) return null;
+
+  // Le rappel garde le même écart avec l'échéance
+  const reminderAt =
+    task.reminderAt && task.dueDate
+      ? new Date(task.reminderAt.getTime() + (next.getTime() - task.dueDate.getTime()))
+      : null;
+
+  const created = await prisma.task.create({
+    data: {
+      userId: task.userId,
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      dueDate: next,
+      allDay: task.allDay,
+      reminderAt,
+      recurrenceRule: task.recurrenceRule,
+      recurrenceParentId: task.id,
+      projectId: task.projectId,
+      status: "TODO",
+      position: await nextPosition(task.userId, "TODO"),
+      tags: { create: task.tags.map(({ tag }) => ({ tagId: tag.id })) },
+      subtasks: { create: task.subtasks.map(({ title, position }) => ({ title, position })) },
+    },
+    include: taskInclude,
+  });
+  return toDto(created);
+}
+
 async function loadTask(id: string) {
   return toDto(await prisma.task.findUniqueOrThrow({ where: { id }, include: taskInclude }));
 }
@@ -109,7 +168,12 @@ tasksRouter.get("/", async (req, res) => {
 
   const where: Prisma.TaskWhereInput = { userId };
 
-  if (query.view === "trash") where.deletedAt = { not: null };
+  if (query.view === "trash") {
+    await prisma.task.deleteMany({
+      where: { userId, deletedAt: { lt: new Date(Date.now() - TRASH_RETENTION_DAYS * DAY_MS) } },
+    });
+    where.deletedAt = { not: null };
+  }
   else {
     where.deletedAt = null;
     where.archivedAt = query.view === "archived" ? { not: null } : null;
@@ -144,6 +208,40 @@ tasksRouter.delete("/trash", async (req, res) => {
     where: { userId: getUserId(req), deletedAt: { not: null } },
   });
   res.json({ deleted: count });
+});
+
+// Rappels arrivés à échéance et pas encore notifiés
+tasksRouter.get("/reminders/due", async (req, res) => {
+  const tasks = await prisma.task.findMany({
+    where: {
+      userId: getUserId(req),
+      reminderAt: { lte: new Date() },
+      reminded: false,
+      deletedAt: null,
+      archivedAt: null,
+      status: { not: "DONE" },
+    },
+    orderBy: { reminderAt: "asc" },
+    include: taskInclude,
+  });
+  res.json({ tasks: tasks.map(toDto) });
+});
+
+// Archive d'un coup toutes les tâches terminées (éventuellement d'une seule liste)
+tasksRouter.post("/archive-done", async (req, res) => {
+  const userId = getUserId(req);
+  const { projectId } = z.object({ projectId: z.string().nullable().optional() }).parse(req.body ?? {});
+  const { count } = await prisma.task.updateMany({
+    where: {
+      userId,
+      status: "DONE",
+      deletedAt: null,
+      archivedAt: null,
+      ...(projectId !== undefined && { projectId }),
+    },
+    data: { archivedAt: new Date() },
+  });
+  res.json({ archived: count });
 });
 
 tasksRouter.get("/:id", async (req, res) => {
@@ -201,7 +299,19 @@ tasksRouter.patch("/:id", async (req, res) => {
   }
 
   await prisma.task.update({ where: { id }, data: update });
-  res.json({ task: await loadTask(id) });
+  const task = await prisma.task.findUniqueOrThrow({ where: { id }, include: taskInclude });
+
+  const completed = data.status === "DONE" && current.status !== "DONE" && !task.deletedAt;
+  const nextTask = completed ? await createNextOccurrence(task) : null;
+
+  res.json({ task: toDto(task), nextTask });
+});
+
+tasksRouter.post("/:id/reminder/ack", async (req, res) => {
+  const { id } = idParam.parse(req.params);
+  await findOwnedTask(getUserId(req), id);
+  await prisma.task.update({ where: { id }, data: { reminded: true } });
+  res.status(204).end();
 });
 
 // Par défaut : mise à la corbeille (annulable). ?permanent=true : suppression définitive.

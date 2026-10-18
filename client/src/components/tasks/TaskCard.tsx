@@ -1,9 +1,10 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { AlignLeftIcon, CalendarIcon, ListChecksIcon, RepeatIcon } from "lucide-react"
+import { AlignLeftIcon, BellIcon, CalendarIcon, ListChecksIcon, RepeatIcon } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { formatDue, isOverdue } from "@/lib/dates"
 import { priorityLabels, priorityStyles } from "@/lib/labels"
+import { describeRule } from "@/lib/recurrence"
 import { useUpdateTask } from "@/lib/queries"
 import type { Task } from "@/lib/types"
 import { cn } from "@/lib/utils"
@@ -71,7 +72,16 @@ export function TaskCard({ task, overlay = false }: { task: Task; overlay?: bool
           </span>
         )}
         {task.description && <AlignLeftIcon className="size-3.5" aria-label="A une description" />}
-        {task.recurrenceRule && <RepeatIcon className="size-3.5" aria-label="Récurrente" />}
+        {task.recurrenceRule && (
+          <span title={describeRule(task.recurrenceRule)} className="flex">
+            <RepeatIcon className="size-3.5" aria-label={describeRule(task.recurrenceRule)} />
+          </span>
+        )}
+        {task.reminderAt && !task.reminded && (
+          <span title="Rappel programmé" className="flex">
+            <BellIcon className="size-3.5" aria-label="Rappel programmé" />
+          </span>
+        )}
         {task.project && (
           <span className="ml-auto flex max-w-[45%] items-center gap-1">
             <span className="size-2 shrink-0 rounded-full" style={{ backgroundColor: task.project.color }} />

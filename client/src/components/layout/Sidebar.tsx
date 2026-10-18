@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useLocation, useSearchParams } from "react-router"
 import {
   AlertTriangleIcon,
+  ArchiveIcon,
   CalendarDaysIcon,
   CalendarIcon,
   CheckSquareIcon,
@@ -65,7 +66,10 @@ export function Sidebar() {
   const [deleting, setDeleting] = useState<Deleting>(null)
 
   const basePath = views.find((v) => pathname.startsWith(v.path))?.path ?? "/kanban"
-  const currentView = params.get("vue") ?? (params.get("liste") || params.get("etiquette") ? null : "all")
+  const onTaskView = views.some((v) => pathname.startsWith(v.path))
+  const currentView = !onTaskView
+    ? null
+    : (params.get("vue") ?? (params.get("liste") || params.get("etiquette") ? null : "all"))
   const close = () => setMobileOpen(false)
 
   return (
@@ -77,7 +81,7 @@ export function Sidebar() {
 
       <Section title="Vues">
         {views.map(({ path, label, icon: Icon }) => (
-          <NavItem key={path} to={`${path}?${params}`} active={basePath === path} onClick={close} icon={<Icon />}>
+          <NavItem key={path} to={`${path}?${params}`} active={pathname.startsWith(path)} onClick={close} icon={<Icon />}>
             {label}
           </NavItem>
         ))}
@@ -145,6 +149,15 @@ export function Sidebar() {
             {tag.name}
           </NavItem>
         ))}
+      </Section>
+
+      <Section title="Autres">
+        <NavItem to="/archives" active={pathname.startsWith("/archives")} onClick={close} icon={<ArchiveIcon />}>
+          Archives
+        </NavItem>
+        <NavItem to="/corbeille" active={pathname.startsWith("/corbeille")} onClick={close} icon={<Trash2Icon />}>
+          Corbeille
+        </NavItem>
       </Section>
 
       <NameColorDialog

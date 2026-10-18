@@ -2,6 +2,7 @@ import { Navigate, Outlet } from "react-router"
 import { Loader2Icon } from "lucide-react"
 import { TaskDialog } from "@/components/tasks/TaskDialog"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
+import { useReminders } from "@/hooks/useReminders"
 import { useShortcuts } from "@/hooks/useShortcuts"
 import { useMe } from "@/lib/queries"
 import { useUi } from "@/stores/ui"
@@ -22,6 +23,13 @@ export function AppLayout() {
     )
   }
   if (!user) return <Navigate to="/connexion" replace />
+
+  return <AuthenticatedLayout mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+}
+
+// Séparé pour ne lancer les rappels qu'une fois l'utilisateur connecté
+function AuthenticatedLayout({ mobileOpen, setMobileOpen }: { mobileOpen: boolean; setMobileOpen: (open: boolean) => void }) {
+  useReminders()
 
   return (
     <div className="flex h-svh overflow-hidden">

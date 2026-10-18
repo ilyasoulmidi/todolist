@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { useSearchParams } from "react-router"
+import { useLocation, useSearchParams } from "react-router"
 import { smartViewFilters, smartViewLabels, toDueIso, type SmartView } from "@/lib/dates"
 import { useProjects, useTags } from "@/lib/queries"
 import type { TaskFilters, TaskInput } from "@/lib/types"
@@ -8,6 +8,7 @@ import { useUi } from "@/stores/ui"
 // Périmètre affiché, lu depuis l'URL (?vue=today, ?liste=<id>, ?etiquette=<id>) + filtres de l'en-tête
 export function useScope() {
   const [params] = useSearchParams()
+  const { pathname } = useLocation()
   const { data: projects } = useProjects()
   const { data: tags } = useTags()
   const search = useUi((s) => s.search)
@@ -51,6 +52,9 @@ export function useScope() {
     if (tagId) defaults.tagIds = [tagId]
     if (!projectId && !tagId && view === "today") defaults.dueDate = toDueIso(new Date())
 
+    if (pathname.startsWith("/corbeille")) title = "Corbeille"
+    else if (pathname.startsWith("/archives")) title = "Archives"
+
     return { title, color, filters, defaults, view, projectId, tagId }
-  }, [view, projectId, tagId, projects, tags, search, priorityFilter, tagFilter])
+  }, [view, projectId, tagId, projects, tags, search, priorityFilter, tagFilter, pathname])
 }

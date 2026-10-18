@@ -12,6 +12,9 @@ Todo-list interactive full-stack : React + TypeScript (Vite) côté client, Expr
 - **Tâches récurrentes** (tous les jours, jours ouvrés, chaque semaine, tous les mois, tous les ans, ou règle personnalisée) : terminer une occurrence crée automatiquement la suivante
 - **Rappels** : notification du navigateur (et rappel dans l'application) à l'heure choisie, avec raccourcis « Dans 1 heure », « Demain 9:00 », « La veille de l'échéance »…
 - **Archives** (archivage en un clic des tâches terminées) et **Corbeille** (restauration, suppression définitive, purge automatique après 30 jours)
+- **Statistiques** : tâches terminées (7 jours, évolution), série de jours actifs et record, tâches en retard, temps de concentration, graphique des 30 derniers jours (avec vue tableau), heatmap d'activité sur 6 mois, répartition par priorité et par liste
+- **Minuteur Pomodoro** (25 / 5 / 15 min) lançable depuis une tâche : widget flottant, pause / reprise, son et notification en fin de session, temps restant dans l'onglet, temps de concentration par tâche
+- **Import / export** JSON (sauvegarde complète) et CSV compatible Excel (séparateur `;`), import qui réutilise les listes et étiquettes existantes
 - Filtres rapides : Aujourd'hui, Cette semaine, En retard ; listes et étiquettes colorées
 - Recherche instantanée et filtres par priorité / étiquette
 - Ajout rapide en bas de colonne, duplication, suppression avec « Annuler »
@@ -101,6 +104,17 @@ Toutes les routes ci-dessous exigent d'être connecté. Un utilisateur n'accède
 | POST | `/api/tasks/archive-done` | Archiver les tâches terminées (`{ projectId? }`) |
 | GET | `/api/tasks/reminders/due` | Rappels arrivés à échéance, pas encore notifiés |
 | POST | `/api/tasks/:id/reminder/ack` | Marquer le rappel comme notifié |
+
+### Pomodoro, statistiques et données
+
+| Méthode | Route | Description |
+|---|---|---|
+| GET | `/api/pomodoros?taskId=` | Sessions (d'une tâche) |
+| POST | `/api/pomodoros` | Démarrer `{ type, durationMin, taskId? }` |
+| PATCH | `/api/pomodoros/:id` | Terminer `{ completed }` (interrompue : seul le temps écoulé compte) |
+| GET | `/api/stats` | Données brutes de l'année, agrégées côté client dans le fuseau de l'utilisateur |
+| GET | `/api/data/export?format=json\|csv` | Téléchargement de toutes les tâches |
+| POST | `/api/data/import` | `{ format: "json", data }` ou `{ format: "csv", content }`, en une transaction |
 | POST | `/api/tasks/:id/subtasks` | Ajouter une sous-tâche `{ title }` |
 | PATCH | `/api/tasks/:id/subtasks/:subtaskId` | `{ title?, done?, position? }` |
 | DELETE | `/api/tasks/:id/subtasks/:subtaskId` | Supprimer une sous-tâche |

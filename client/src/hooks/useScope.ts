@@ -53,6 +53,7 @@ export function useScope() {
     if (!projectId && !tagId && view === "today") defaults.dueDate = toDueIso(new Date())
 
     if (pathname.startsWith("/corbeille")) title = "Corbeille"
+    else if (pathname.startsWith("/statistiques")) title = "Statistiques"
     else if (pathname.startsWith("/archives")) title = "Archives"
 
     return { title, color, filters, defaults, view, projectId, tagId }

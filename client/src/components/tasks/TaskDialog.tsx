@@ -4,6 +4,8 @@ import { fr } from "date-fns/locale"
 import { fr as dayPickerFr } from "react-day-picker/locale"
 import { ArchiveIcon, ArchiveRestoreIcon, CalendarIcon, CopyIcon, Loader2Icon, PlusIcon, RotateCcwIcon, Trash2Icon, XIcon } from "lucide-react"
 import { RecurrencePicker, ReminderPicker } from "./SchedulePickers"
+import { usePomodoroActions } from "@/hooks/usePomodoroActions"
+import { usePomodoro } from "@/stores/pomodoro"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -25,6 +27,7 @@ import {
   useSubtaskMutations,
   useTags,
   useTask,
+  useTaskPomodoros,
   useUpdateTask,
 } from "@/lib/queries"
 import type { Priority, Task, TaskInput, TaskStatus } from "@/lib/types"
@@ -229,6 +232,8 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
 
         <DescriptionField value={task.description ?? ""} onCommit={(description) => save({ description })} />
 
+        {!task.deletedAt && !task.archivedAt && task.status !== "DONE" && <FocusSection task={task} />}
+
         <div className="flex flex-col gap-2">
           <Label>
             Sous-tâches
@@ -307,6 +312,37 @@ function EditTaskForm({ task, onDone }: { task: Task; onDone: () => void }) {
         </div>
       </DialogFooter>
     </>
+  )
+}
+
+// Lancement d'un Pomodoro sur la tâche + temps de concentration déjà passé dessus
+function FocusSection({ task }: { task: Task }) {
+  const { data: sessions = [] } = useTaskPomodoros(task.id)
+  const { start } = usePomodoroActions()
+  const activeTaskId = usePomodoro((s) => s.active?.taskId)
+  const work = sessions.filter((s) => s.type === "WORK" && s.endedAt)
+  const minutes = work.reduce((sum, s) => sum + s.durationMin, 0)
+  const done = work.filter((s) => s.completed).length
+
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+      <span className="text-lg" aria-hidden>
+        🍅
+      </span>
+      <span className="flex-1 text-muted-foreground">
+        {minutes > 0
+          ? `${done} session${done > 1 ? "s" : ""} terminée${done > 1 ? "s" : ""} · ${minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`} de concentration`
+          : "Aucune session de concentration sur cette tâche"}
+      </span>
+      <Button
+        size="sm"
+        variant={activeTaskId === task.id ? "outline" : "default"}
+        disabled={activeTaskId === task.id}
+        onClick={() => start("WORK", { id: task.id, title: task.title })}
+      >
+        {activeTaskId === task.id ? "En cours…" : "Lancer un Pomodoro"}
+      </Button>
+    </div>
   )
 }
 

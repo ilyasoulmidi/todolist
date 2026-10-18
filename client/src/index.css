@@ -65,6 +65,14 @@
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
+    /* Graphiques (validés avec le skill dataviz contre la surface des cartes) */
+    --viz-series: #2a78d6;
+    --viz-heat-0: #f0efec;
+    --viz-heat-1: #86b6ef;
+    --viz-heat-2: #5598e7;
+    --viz-heat-3: #2a78d6;
+    --viz-heat-4: #184f95;
+    --viz-critical: #d03b3b;
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
     --chart-1: oklch(0.87 0 0);
@@ -100,6 +108,13 @@
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
+    --viz-series: #3987e5;
+    --viz-heat-0: #383835;
+    --viz-heat-1: #1c5cab;
+    --viz-heat-2: #2a78d6;
+    --viz-heat-3: #5598e7;
+    --viz-heat-4: #9ec5f4;
+    --viz-critical: #d03b3b;
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
     --chart-1: oklch(0.87 0 0);

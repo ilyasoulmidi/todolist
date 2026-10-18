@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useLocation, useSearchParams } from "react-router"
 import {
   AlertTriangleIcon,
+  BarChart3Icon,
   ArchiveIcon,
   CalendarDaysIcon,
   CalendarIcon,
@@ -152,6 +153,9 @@ export function Sidebar() {
       </Section>
 
       <Section title="Autres">
+        <NavItem to="/statistiques" active={pathname.startsWith("/statistiques")} onClick={close} icon={<BarChart3Icon />}>
+          Statistiques
+        </NavItem>
         <NavItem to="/archives" active={pathname.startsWith("/archives")} onClick={close} icon={<ArchiveIcon />}>
           Archives
         </NavItem>

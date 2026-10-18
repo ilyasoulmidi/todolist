@@ -167,6 +167,7 @@ function patchCachedTask(qc: QueryClient, id: string, update: (task: Task) => Ta
 function invalidateAfterTaskChange(qc: QueryClient) {
   qc.invalidateQueries({ queryKey: keys.tasks })
   qc.invalidateQueries({ queryKey: keys.projects })
+  qc.invalidateQueries({ queryKey: ["stats"] })
 }
 
 export function useCreateTask() {
@@ -359,6 +360,24 @@ export function useBulkTasks() {
   })
 
   return { update, remove }
+}
+
+// --- Pomodoro ---
+
+export interface PomodoroSession {
+  id: string
+  type: "WORK" | "SHORT_BREAK" | "LONG_BREAK"
+  durationMin: number
+  startedAt: string
+  endedAt: string | null
+  completed: boolean
+}
+
+export function useTaskPomodoros(taskId: string) {
+  return useQuery({
+    queryKey: ["pomodoros", taskId],
+    queryFn: async () => (await api.get<{ sessions: PomodoroSession[] }>("/pomodoros", { taskId })).sessions,
+  })
 }
 
 // --- Sous-tâches ---

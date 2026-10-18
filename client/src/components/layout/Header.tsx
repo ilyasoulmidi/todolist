@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router"
+import { useState } from "react"
 import {
+  DownloadIcon,
+  FileUpIcon,
   FilterIcon,
   LogOutIcon,
   MenuIcon,
@@ -10,6 +13,8 @@ import {
   SunIcon,
   XIcon,
 } from "lucide-react"
+import { ImportDialog } from "@/components/ImportDialog"
+import { PomodoroLauncher } from "@/components/PomodoroWidget"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -54,7 +59,16 @@ export function Header() {
     setMobileSidebarOpen,
   } = useUi()
 
+  const [importOpen, setImportOpen] = useState(false)
   const activeFilters = priorityFilter.length + tagFilter.length
+
+  // Le cookie de session accompagne la requête : le navigateur télécharge directement le fichier
+  const download = (format: "json" | "csv") => {
+    const a = document.createElement("a")
+    a.href = `/api/data/export?format=${format}`
+    a.download = ""
+    a.click()
+  }
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b px-4 py-3 md:px-6">
@@ -144,6 +158,8 @@ export function Header() {
           <span className="hidden sm:inline">Nouvelle tâche</span>
         </Button>
 
+        <PomodoroLauncher />
+
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Thème" />}>
             {resolvedTheme === "dark" ? <MoonIcon /> : <SunIcon />}
@@ -177,6 +193,19 @@ export function Header() {
               </DropdownMenuLabel>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Mes données</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => download("json")}>
+                <DownloadIcon /> Exporter en JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => download("csv")}>
+                <DownloadIcon /> Exporter en CSV (Excel)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setImportOpen(true)}>
+                <FileUpIcon /> Importer…
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => logout.mutate(undefined, { onSuccess: () => navigate("/connexion") })}
             >
@@ -185,6 +214,8 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} />
 
       {/* Recherche pleine largeur sur mobile */}
       <div className="relative w-full sm:hidden">

@@ -84,7 +84,60 @@ async function main() {
     },
   });
 
-  console.log(`Seed OK : ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+  // Historique pour la page Statistiques : tâches terminées (puis archivées) sur ~4 mois
+  // Pseudo-aléatoire déterministe pour que la démo soit identique à chaque seed
+  let seedValue = 42;
+  const random = () => ((seedValue = (seedValue * 16807) % 2147483647) / 2147483647);
+  const history = [
+    "Répondre aux emails",
+    "Faire le point hebdo",
+    "Ranger le bureau",
+    "Courir 5 km",
+    "Lire 20 pages",
+    "Mettre à jour le planning",
+    "Préparer le repas",
+    "Payer une facture",
+  ];
+  const archivedTasks = [];
+  for (let daysAgo = 120; daysAgo >= 1; daysAgo--) {
+    const weekend = [0, 6].includes(new Date(Date.now() - daysAgo * 86_400_000).getDay());
+    // Plus d'activité récemment et en semaine
+    const count = Math.floor(random() * (weekend ? 2 : 4) + (daysAgo < 30 ? 1 : 0) - (random() < 0.25 ? 2 : 0));
+    for (let i = 0; i < count; i++) {
+      const completedAt = new Date(Date.now() - daysAgo * 86_400_000 + Math.floor(random() * 8) * 3_600_000);
+      archivedTasks.push({
+        userId: user.id,
+        title: history[Math.floor(random() * history.length)],
+        status: "DONE" as const,
+        priority: (["LOW", "MEDIUM", "MEDIUM", "HIGH"] as const)[Math.floor(random() * 4)],
+        projectId: random() < 0.5 ? perso.id : travail.id,
+        createdAt: new Date(completedAt.getTime() - 2 * 86_400_000),
+        completedAt,
+        archivedAt: completedAt,
+      });
+    }
+  }
+  await prisma.task.createMany({ data: archivedTasks });
+
+  // Sessions Pomodoro de la semaine écoulée
+  const sessions = [];
+  for (let daysAgo = 6; daysAgo >= 0; daysAgo--) {
+    const n = Math.floor(random() * 4);
+    for (let i = 0; i < n; i++) {
+      const startedAt = new Date(Date.now() - daysAgo * 86_400_000 - (i + 1) * 3_600_000);
+      sessions.push({
+        userId: user.id,
+        type: "WORK" as const,
+        durationMin: 25,
+        startedAt,
+        endedAt: new Date(startedAt.getTime() + 25 * 60_000),
+        completed: true,
+      });
+    }
+  }
+  await prisma.pomodoroSession.createMany({ data: sessions });
+
+  console.log(`Seed OK : ${DEMO_EMAIL} / ${DEMO_PASSWORD} (${archivedTasks.length} tâches d'historique, ${sessions.length} sessions Pomodoro)`);
 }
 
 main()

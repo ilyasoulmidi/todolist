@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router"
 import { Loader2Icon } from "lucide-react"
+import { PomodoroWidget } from "@/components/PomodoroWidget"
 import { TaskDialog } from "@/components/tasks/TaskDialog"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { useReminders } from "@/hooks/useReminders"
@@ -52,6 +53,7 @@ function AuthenticatedLayout({ mobileOpen, setMobileOpen }: { mobileOpen: boolea
       </div>
 
       <TaskDialog />
+      <PomodoroWidget />
     </div>
   )
 }

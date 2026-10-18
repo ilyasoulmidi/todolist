@@ -6,6 +6,8 @@ Todo-list interactive full-stack : React + TypeScript (Vite) côté client, Expr
 
 - Comptes utilisateurs (inscription, connexion, session en cookie sécurisé)
 - Tableau **Kanban** (À faire / En cours / Fait) avec glisser-déposer entre les colonnes et dans une colonne
+- Vue **Liste** : tri (échéance, priorité, titre, création, manuel), regroupement (échéance, statut, priorité, liste), filtre de statut, sélection multiple et actions groupées (terminer, statut, priorité, suppression annulable)
+- Vue **Calendrier** mois / semaine : glisser une tâche sur un jour pour la replanifier, panneau des tâches sans échéance, création rapide sur un jour, affichage adapté au mobile
 - Tâches complètes : priorité, échéance, liste, étiquettes, description, sous-tâches avec progression
 - Filtres rapides : Aujourd'hui, Cette semaine, En retard ; listes et étiquettes colorées
 - Recherche instantanée et filtres par priorité / étiquette

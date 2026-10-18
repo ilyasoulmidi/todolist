@@ -5,7 +5,9 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useApplyTheme } from "@/hooks/useApplyTheme"
 import { AuthPage } from "@/pages/AuthPage"
+import { CalendarPage } from "@/pages/CalendarPage"
 import { KanbanPage } from "@/pages/KanbanPage"
+import { ListPage } from "@/pages/ListPage"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +24,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/kanban" replace /> },
       { path: "kanban", element: <KanbanPage /> },
+      { path: "liste", element: <ListPage /> },
+      { path: "calendrier", element: <CalendarPage /> },
       { path: "*", element: <Navigate to="/kanban" replace /> },
     ],
   },

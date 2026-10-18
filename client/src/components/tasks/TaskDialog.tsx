@@ -36,7 +36,7 @@ export function TaskDialog() {
   return (
     <Dialog open={dialog !== null} onOpenChange={(open) => !open && close()}>
       <DialogContent className="max-h-[90svh] gap-0 overflow-y-auto p-0 sm:max-w-2xl">
-        {dialog?.mode === "new" && <NewTaskForm status={dialog.status} onDone={close} />}
+        {dialog?.mode === "new" && <NewTaskForm initial={dialog.defaults} onDone={close} />}
         {dialog?.mode === "edit" && <EditTask id={dialog.id} onDone={close} />}
       </DialogContent>
     </Dialog>
@@ -45,10 +45,10 @@ export function TaskDialog() {
 
 // --- Création ---
 
-function NewTaskForm({ status, onDone }: { status?: TaskStatus; onDone: () => void }) {
+function NewTaskForm({ initial, onDone }: { initial?: TaskInput; onDone: () => void }) {
   const { defaults } = useScope()
   const createTask = useCreateTask()
-  const [values, setValues] = useState<TaskInput>({ priority: "MEDIUM", ...defaults, status: status ?? "TODO" })
+  const [values, setValues] = useState<TaskInput>({ priority: "MEDIUM", status: "TODO", ...defaults, ...initial })
   const [subtasks, setSubtasks] = useState<string[]>([])
 
   async function submit(e: FormEvent) {

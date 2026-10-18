@@ -262,6 +262,43 @@ export function useDeleteTask() {
   })
 }
 
+// Actions groupées de la vue Liste (une requête par tâche, en parallèle)
+export function useBulkTasks() {
+  const qc = useQueryClient()
+
+  const update = useMutation({
+    mutationFn: ({ ids, data }: { ids: string[]; data: TaskInput }) =>
+      Promise.all(ids.map((id) => api.patch(`/tasks/${id}`, data))),
+    onSuccess: (_r, { ids }) => toast.success(`${ids.length} tâche${ids.length > 1 ? "s" : ""} modifiée${ids.length > 1 ? "s" : ""}`),
+    onError: showError,
+    onSettled: () => invalidateAfterTaskChange(qc),
+  })
+
+  const remove = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => api.delete(`/tasks/${id}`))),
+    onSuccess: (_r, ids) => {
+      toast(`${ids.length} tâche${ids.length > 1 ? "s" : ""} supprimée${ids.length > 1 ? "s" : ""}`, {
+        duration: 8000,
+        action: {
+          label: "Annuler",
+          onClick: async () => {
+            try {
+              await Promise.all(ids.map((id) => api.post(`/tasks/${id}/restore`)))
+            } catch (e) {
+              showError(e)
+            }
+            invalidateAfterTaskChange(qc)
+          },
+        },
+      })
+    },
+    onError: showError,
+    onSettled: () => invalidateAfterTaskChange(qc),
+  })
+
+  return { update, remove }
+}
+
 // --- Sous-tâches ---
 
 export function useSubtaskMutations(taskId: string) {

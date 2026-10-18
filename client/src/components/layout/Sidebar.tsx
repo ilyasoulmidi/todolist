@@ -37,11 +37,10 @@ const smartViews: { view: SmartView; label: string; icon: typeof InboxIcon }[] =
   { view: "overdue", label: "En retard", icon: AlertTriangleIcon },
 ]
 
-// Liste et Calendrier arrivent à l'étape suivante
 const views = [
-  { path: "/kanban", label: "Kanban", icon: KanbanIcon, ready: true },
-  { path: "/liste", label: "Liste", icon: ListIcon, ready: false },
-  { path: "/calendrier", label: "Calendrier", icon: CalendarIcon, ready: false },
+  { path: "/kanban", label: "Kanban", icon: KanbanIcon },
+  { path: "/liste", label: "Liste", icon: ListIcon },
+  { path: "/calendrier", label: "Calendrier", icon: CalendarIcon },
 ]
 
 type Editing =
@@ -77,19 +76,11 @@ export function Sidebar() {
       </Link>
 
       <Section title="Vues">
-        {views.map(({ path, label, icon: Icon, ready }) =>
-          ready ? (
-            <NavItem key={path} to={`${path}?${params}`} active={basePath === path} onClick={close} icon={<Icon />}>
-              {label}
-            </NavItem>
-          ) : (
-            <div key={path} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground/60">
-              <Icon className="size-4" />
-              {label}
-              <span className="ml-auto text-[10px] tracking-wide uppercase">bientôt</span>
-            </div>
-          ),
-        )}
+        {views.map(({ path, label, icon: Icon }) => (
+          <NavItem key={path} to={`${path}?${params}`} active={basePath === path} onClick={close} icon={<Icon />}>
+            {label}
+          </NavItem>
+        ))}
       </Section>
 
       <Section title="Filtres rapides">

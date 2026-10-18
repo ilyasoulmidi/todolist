@@ -24,3 +24,20 @@ npm run dev                       # lance l'API et le front
 - Front : http://localhost:5173
 - API : http://localhost:4000/api/health
 - Explorer la base : `npm run db:studio -w server`
+
+## Tests
+
+```bash
+npm test -w server   # tests de l'API (base PostgreSQL dédiée : todolist_test)
+```
+
+## API
+
+L'authentification repose sur un JWT stocké dans un cookie `httpOnly` (valable 7 jours).
+
+| Méthode | Route | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Inscription `{ name, email, password }` (mot de passe ≥ 8 caractères) |
+| POST | `/api/auth/login` | Connexion `{ email, password }` |
+| POST | `/api/auth/logout` | Déconnexion (efface le cookie) |
+| GET | `/api/auth/me` | Utilisateur connecté (401 sinon) |

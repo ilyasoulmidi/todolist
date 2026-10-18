@@ -6,3 +6,4 @@ server/src/generated/
 
 # Configuration locale de l'éditeur / des outils
 .claude/
+.vercel/

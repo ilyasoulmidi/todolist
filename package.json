@@ -1,6 +1,7 @@
 {
   "name": "todolist",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=22.12"
   },
@@ -16,7 +17,7 @@
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
     "build": "npm run build -w client && npm run build -w server",
-    "start": "npm run start -w server"
+    "vercel-build": "npm run build && npm run db:deploy -w server"
   },
   "devDependencies": {
     "concurrently": "^9.2.5"

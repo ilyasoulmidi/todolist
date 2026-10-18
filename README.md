@@ -60,4 +60,4 @@ Les fois suivantes, `npm run dev` suffit.
 
 ## Mise en ligne
 
-Le projet se déploie gratuitement sur [Render](https://render.com) (fichier `render.yaml`) avec une base PostgreSQL [Neon](https://neon.com) : il suffit de renseigner la variable `DATABASE_URL`.
+Le projet se déploie gratuitement sur [Vercel](https://vercel.com) (fichier `vercel.json`) avec une base PostgreSQL [Neon](https://neon.com) : il suffit de renseigner les variables `DATABASE_URL` et `JWT_SECRET`.

@@ -64,13 +64,24 @@ docker-compose.yml   PostgreSQL 17 (port 5433)
 
 ## Démarrage
 
+Prérequis : Node.js 20+ et Docker Desktop (ouvert).
+
+**Au quotidien, une seule commande :**
+
+```bash
+npm run dev
+```
+
+Elle démarre PostgreSQL (Docker) et attend qu'il soit prêt, lance l'API et le front, puis ouvre l'application dans le navigateur. `Ctrl + C` pour arrêter ; `npm run db:down` éteint la base (les données sont conservées).
+
+**Première installation** (après un `git clone`) :
+
 ```bash
 npm install                       # installe client + serveur (workspaces) et génère le client Prisma
 cp server/.env.example server/.env
 npm run db:up                     # lance PostgreSQL dans Docker
 npm run db:migrate -w server      # applique les migrations
 npm run db:seed -w server         # données de démo (demo@todolist.test / demo1234)
-npm run dev                       # lance l'API et le front
 ```
 
 - Front : http://localhost:5173

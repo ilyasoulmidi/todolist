@@ -6,9 +6,10 @@
     "server"
   ],
   "scripts": {
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down",
+    "predev": "node scripts/start-db.mjs",
     "dev": "concurrently -k -n api,web -c blue,green \"npm run dev -w server\" \"npm run dev -w client\"",
+    "db:up": "node scripts/start-db.mjs",
+    "db:down": "docker compose down",
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
     "build": "npm run build --workspaces --if-present"
